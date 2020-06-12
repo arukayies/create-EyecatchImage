@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <canvas id="myCanvas" width="1200" height="630"></canvas>
+    <script>
+      /* 描画する画像データを配列に格納する */
+      let addImageURLs = [];
+      const imgString = <?= addImageURLsBase64 ?>;
+      const imgArray = imgString.split(',');
+      for (let i = 0; i < imgArray.length; i++) {
+          addImageURLs.push('data:image/png;base64, ' + imgArray[i]);
+      }
+
+      /* 描画する画像データの合成位置を配列に格納する */
+      let addImagePoints = [];
+      const imgPointString = <?= addImagePoints ?>;
+      const imgPointArray = imgPointString.split(',');
+      for (let i = 0; i < imgPointArray.length; i++) {
+          addImagePoints.push([imgPointArray[i], imgPointArray[i + 1]]);
+          i++;
+      }
+
+      (function () {
+          const canvas = document.getElementById("myCanvas");
+          const context = canvas.getContext("2d");
+          const downloadLink = document.getElementById("download_link");
+
+          let images = [];
+          for (let i = 0; i < addImageURLs.length; i++) {
+              images[i] = new Image();
+              images[i].src = addImageURLs[i];
+          }
+
+          let loadedCount = 1;
+          for (let i in images) {
+              images[i].addEventListener(
+                  "load",
+                  function () {
+                      if (loadedCount == images.length) {
+                          for (let j = 0; j < images.length; j++) {
+                              if (j == 0) {/* ベース画像を描画 */
+                                  context.drawImage(images[j], 0, 0);
+                              } else {/* それ以外の画像は指定位置に描画 */
+                                  context.drawImage(images[j], addImagePoints[j - 1][0], addImagePoints[j - 1][1]);
+                              }
+                          }
+                      }
+                      loadedCount++;
+                  },
+                  false
+              );
+          }
+      })();
+    </script>
+  </body>
+</html>
